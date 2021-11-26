@@ -18,6 +18,9 @@ class DownloadTaskStatus {
   static const canceled = const DownloadTaskStatus(5);
   static const paused = const DownloadTaskStatus(6);
 
+  // only called for user clicked on notification after complete
+  static const clicked = const DownloadTaskStatus(1000);
+
   @override
   bool operator ==(Object o) {
     if (identical(this, o)) return true;
