@@ -8,7 +8,4 @@ public class DownloadStatus {
     public static int FAILED = 4;
     public static int CANCELED = 5;
     public static int PAUSED = 6;
-
-    // only send after COMPLETE
-    public static int CLICKED = 1000;
 }
