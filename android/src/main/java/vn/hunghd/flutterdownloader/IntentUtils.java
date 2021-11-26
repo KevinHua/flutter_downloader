@@ -17,8 +17,11 @@ import java.util.List;
 
 public class IntentUtils {
 
-    private static Intent buildIntent(Context context, File file, String mime) {
+    private static Intent buildIntent(Context context, File file, String mime, String packageName, String className) {
         Intent intent = new Intent(Intent.ACTION_VIEW);
+        if(packageName != null && className != null) {
+            intent.setClassName(packageName, className);
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             Uri uri = FileProvider.getUriForFile(context, context.getPackageName() + ".flutter_downloader.provider", file);
             intent.setDataAndType(uri, mime);
@@ -30,9 +33,9 @@ public class IntentUtils {
         return intent;
     }
 
-    public static synchronized Intent validatedFileIntent(Context context, String path, String contentType) {
+    public static synchronized Intent validatedFileIntent(Context context, String path, String contentType, String packageName, String className) {
         File file = new File(path);
-        Intent intent = buildIntent(context, file, contentType);
+        Intent intent = buildIntent(context, file, contentType, packageName, className);
         if (validateIntent(context, intent)) {
             return intent;
         }

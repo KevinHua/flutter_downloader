@@ -48,6 +48,10 @@ public class FlutterDownloaderPlugin implements MethodCallHandler, FlutterPlugin
     private TaskDao taskDao;
     private Context context;
     private long callbackHandle;
+    // for open file
+    private String viewerPackageName;
+    private String viewerClassName;
+
     private int debugMode;
     private final Object initializationLock = new Object();
 
@@ -166,6 +170,8 @@ public class FlutterDownloaderPlugin implements MethodCallHandler, FlutterPlugin
     private void registerCallback(MethodCall call, MethodChannel.Result result) {
         List args = (List) call.arguments;
         callbackHandle = Long.parseLong(args.get(0).toString());
+        viewerPackageName = args.get(1);
+        viewerClassName = args.get(2);
         result.success(null);
     }
 
@@ -311,7 +317,7 @@ public class FlutterDownloaderPlugin implements MethodCallHandler, FlutterPlugin
                     filename = fileURL.substring(fileURL.lastIndexOf("/") + 1, fileURL.length());
                 }
                 String saveFilePath = savedDir + File.separator + filename;
-                Intent intent = IntentUtils.validatedFileIntent(context, saveFilePath, task.mimeType);
+                Intent intent = IntentUtils.validatedFileIntent(context, saveFilePath, task.mimeType, viewerPackageName, viewerClassName);
                 if (intent != null) {
                     context.startActivity(intent);
                     result.success(true);
