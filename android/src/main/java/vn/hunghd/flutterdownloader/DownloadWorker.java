@@ -176,7 +176,7 @@ public class DownloadWorker extends Worker implements MethodChannel.MethodCallHa
 
         DownloadTask task = taskDao.loadTask(getId().toString());
         if (task.status == DownloadStatus.ENQUEUED) {
-            updateNotification(context, filename == null ? url : filename, DownloadStatus.CANCELED, -1, null, true);
+            updateNotification(context, filename == null ? url : filename, DownloadStatus.CANCELED, -1, null, null, true);
             taskDao.updateTask(getId().toString(), DownloadStatus.CANCELED, lastProgress);
         }
     }
@@ -223,7 +223,7 @@ public class DownloadWorker extends Worker implements MethodChannel.MethodCallHa
 
         setupNotification(context);
 
-        updateNotification(context, filename == null ? url : filename, DownloadStatus.RUNNING, task.progress, null, false);
+        updateNotification(context, filename == null ? url : filename, DownloadStatus.RUNNING, task.progress, null, null, false);
         taskDao.updateTask(getId().toString(), DownloadStatus.RUNNING, task.progress);
 
         //automatic resume for partial files. (if the workmanager unexpectedly quited in background)
@@ -241,7 +241,7 @@ public class DownloadWorker extends Worker implements MethodChannel.MethodCallHa
             taskDao = null;
             return Result.success();
         } catch (Exception e) {
-            updateNotification(context, filename == null ? url : filename, DownloadStatus.FAILED, -1, null, true);
+            updateNotification(context, filename == null ? url : filename, DownloadStatus.FAILED, -1, null, null, true);
             taskDao.updateTask(getId().toString(), DownloadStatus.FAILED, lastProgress);
             e.printStackTrace();
             dbHelper = null;
@@ -422,7 +422,7 @@ public class DownloadWorker extends Worker implements MethodChannel.MethodCallHa
                         // a new bunch of data fetched and a notification sent
                         taskDao.updateTask(getId().toString(), DownloadStatus.RUNNING, progress);
 
-                        updateNotification(context, filename, DownloadStatus.RUNNING, progress, null, false);
+                        updateNotification(context, filename, DownloadStatus.RUNNING, progress, null, null, false);
                     }
                 }
 
@@ -431,6 +431,7 @@ public class DownloadWorker extends Worker implements MethodChannel.MethodCallHa
                 int status = isStopped() ? (task.resumable ? DownloadStatus.PAUSED : DownloadStatus.CANCELED) : DownloadStatus.COMPLETE;
                 int storage = ContextCompat.checkSelfPermission(getApplicationContext(), android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
                 PendingIntent pendingIntent = null;
+                PendingIntent pendingIntentCancel = null;
                 if (status == DownloadStatus.COMPLETE) {
                     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
                         if (isImageOrVideoFile(contentType) && isExternalStoragePath(savedFilePath)) {
@@ -441,18 +442,25 @@ public class DownloadWorker extends Worker implements MethodChannel.MethodCallHa
                     if (clickToOpenDownloadedFile) {
                         if(android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.Q && storage != PackageManager.PERMISSION_GRANTED)
                             return;
-                        Intent intent = IntentUtils.validatedFileIntent(getApplicationContext(), savedFilePath, contentType, viewerPackageName, viewerClassName);
-                        if (intent != null) {
-                            log("Setting an intent to open the file " + savedFilePath);
-                            int flags = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ? PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_IMMUTABLE : PendingIntent.FLAG_CANCEL_CURRENT;
-                            pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, intent, flags);
-                        } else {
-                            log("There's no application that can open the file " + savedFilePath);
-                        }
+
+                        // FlutterDownloader 原来的打开文件的方法, 在一些机型上无法使用
+                        //Intent intent = IntentUtils.validatedFileIntent(getApplicationContext(), savedFilePath, contentType, viewerPackageName, viewerClassName);
+                        // intent clicked
+                        Intent intentClick = new Intent(this, NotificationBroadcastReceiver.class);
+                        intentClick.setAction("flutter_downloader_notification_clicked");
+                        intentCancel.putExtra("task_id", getId().toString());
+                        intentCancel.putExtra("filename", savedFilePath);
+                        pendingIntent = PendingIntent.getBroadcast(this, 0, intentClick, PendingIntent.FLAG_ONE_SHOT);
+                        
+                        Intent intentCancel = new Intent(this, NotificationBroadcastReceiver.class);
+                        intentCancel.setAction("flutter_downloader_notification_cancelled");
+                        intentCancel.putExtra("task_id", getId().toString());
+                        intentCancel.putExtra("filename", savedFilePath);
+                        pendingIntentCancel = PendingIntent.getBroadcast(this, 0, intentCancel, PendingIntent.FLAG_ONE_SHOT);
                     }
                 }
                 taskDao.updateTask(getId().toString(), status, progress);
-                updateNotification(context, filename, status, progress, pendingIntent, true);
+                updateNotification(context, filename, status, progress, pendingIntentClick, pendingIntentCancel, true);
 
                 log(isStopped() ? "Download canceled" : "File downloaded");
             } else {
@@ -608,7 +616,7 @@ public class DownloadWorker extends Worker implements MethodChannel.MethodCallHa
         }
     }
 
-    private void updateNotification(Context context, String title, int status, int progress, PendingIntent intent, boolean finalize) {
+    private void updateNotification(Context context, String title, int status, int progress, PendingIntent intent, PendingIntent intentCancel, boolean finalize) {
         sendUpdateProcessEvent(status, progress);
 
         // Show the notification
@@ -620,6 +628,10 @@ public class DownloadWorker extends Worker implements MethodChannel.MethodCallHa
                     .setOnlyAlertOnce(true)
                     .setAutoCancel(true)
                     .setPriority(NotificationCompat.PRIORITY_LOW);
+
+            if(intentCancel) {
+                builder.setDeleteIntent(intentCancel);
+            }
 
             if (status == DownloadStatus.RUNNING) {
                 if (progress <= 0) {
