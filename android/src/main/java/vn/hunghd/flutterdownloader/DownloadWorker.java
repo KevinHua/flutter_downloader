@@ -629,7 +629,7 @@ public class DownloadWorker extends Worker implements MethodChannel.MethodCallHa
                     .setAutoCancel(true)
                     .setPriority(NotificationCompat.PRIORITY_LOW);
 
-            if(intentCancel) {
+            if(intentCancel != null) {
                 builder.setDeleteIntent(intentCancel);
             }
 
