@@ -446,28 +446,30 @@ public class DownloadWorker extends Worker implements MethodChannel.MethodCallHa
                         // FlutterDownloader 原来的打开文件的方法, 在一些机型上无法使用
                         //Intent intent = IntentUtils.validatedFileIntent(getApplicationContext(), savedFilePath, contentType, viewerPackageName, viewerClassName);
                         // intent clicked
-                        Intent intentClick = new Intent(this, NotificationBroadcastReceiver.class);
+                        Intent intentClick = new Intent(getApplicationContext());
                         intentClick.setAction("flutter_downloader_notification_clicked");
-                        intentCancel.putExtra("task_id", getId().toString());
-                        intentCancel.putExtra("filename", savedFilePath);
-                        pendingIntent = PendingIntent.getBroadcast(this, 0, intentClick, PendingIntent.FLAG_ONE_SHOT);
+                        intentClick.setClassName(viewerPackageName, viewerClassName);
+                        intentClick.putExtra("task_id", getId().toString());
+                        intentClick.putExtra("filename", savedFilePath);
+                        pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, intentClick, PendingIntent.FLAG_ONE_SHOT);
                         
-                        Intent intentCancel = new Intent(this, NotificationBroadcastReceiver.class);
+                        Intent intentCancel = new Intent(getApplicationContext());
                         intentCancel.setAction("flutter_downloader_notification_cancelled");
+                        intentCancel.setClassName(viewerPackageName, viewerClassName);
                         intentCancel.putExtra("task_id", getId().toString());
                         intentCancel.putExtra("filename", savedFilePath);
-                        pendingIntentCancel = PendingIntent.getBroadcast(this, 0, intentCancel, PendingIntent.FLAG_ONE_SHOT);
+                        pendingIntentCancel = PendingIntent.getBroadcast(getApplicationContext(), 0, intentCancel, PendingIntent.FLAG_ONE_SHOT);
                     }
                 }
                 taskDao.updateTask(getId().toString(), status, progress);
-                updateNotification(context, filename, status, progress, pendingIntentClick, pendingIntentCancel, true);
+                updateNotification(context, filename, status, progress, pendingIntent, pendingIntentCancel, true);
 
                 log(isStopped() ? "Download canceled" : "File downloaded");
             } else {
                 DownloadTask task = taskDao.loadTask(getId().toString());
                 int status = isStopped() ? (task.resumable ? DownloadStatus.PAUSED : DownloadStatus.CANCELED) : DownloadStatus.FAILED;
                 taskDao.updateTask(getId().toString(), status, lastProgress);
-                updateNotification(context, filename == null ? fileURL : filename, status, -1, null, true);
+                updateNotification(context, filename == null ? fileURL : filename, status, -1, null, null, true);
                 log(isStopped() ? "Download canceled" : "Server replied HTTP code: " + responseCode);
             }
         } catch (IOException e) {
