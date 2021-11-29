@@ -59,7 +59,7 @@ public class IntentUtils {
             mime = URLConnection.guessContentTypeFromName(path); // fallback to check file extension
         }
         if (mime != null) {
-            intent = buildIntent(context, file, mime);
+            intent = buildIntent(context, file, mime, viewerPackageName, viewerClassName);
             if (validateIntent(context, intent))
                 return intent;
         }
