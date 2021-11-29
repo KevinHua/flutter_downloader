@@ -446,15 +446,13 @@ public class DownloadWorker extends Worker implements MethodChannel.MethodCallHa
                         // FlutterDownloader 原来的打开文件的方法, 在一些机型上无法使用
                         //Intent intent = IntentUtils.validatedFileIntent(getApplicationContext(), savedFilePath, contentType, viewerPackageName, viewerClassName);
                         // intent clicked
-                        Intent intentClick = new Intent(getApplicationContext());
-                        intentClick.setAction("flutter_downloader_notification_clicked");
+                        Intent intentClick = new Intent("flutter_downloader_notification_clicked");
                         intentClick.setClassName(viewerPackageName, viewerClassName);
                         intentClick.putExtra("task_id", getId().toString());
                         intentClick.putExtra("filename", savedFilePath);
                         pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, intentClick, PendingIntent.FLAG_ONE_SHOT);
                         
-                        Intent intentCancel = new Intent(getApplicationContext());
-                        intentCancel.setAction("flutter_downloader_notification_cancelled");
+                        Intent intentCancel = new Intent("flutter_downloader_notification_cancelled");
                         intentCancel.setClassName(viewerPackageName, viewerClassName);
                         intentCancel.putExtra("task_id", getId().toString());
                         intentCancel.putExtra("filename", savedFilePath);
