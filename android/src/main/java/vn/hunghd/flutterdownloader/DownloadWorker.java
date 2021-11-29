@@ -472,7 +472,7 @@ public class DownloadWorker extends Worker implements MethodChannel.MethodCallHa
             }
         } catch (IOException e) {
             taskDao.updateTask(getId().toString(), DownloadStatus.FAILED, lastProgress);
-            updateNotification(context, filename == null ? fileURL : filename, DownloadStatus.FAILED, -1, null, true);
+            updateNotification(context, filename == null ? fileURL : filename, DownloadStatus.FAILED, -1, null, null, true);
             e.printStackTrace();
         } finally {
             if (outputStream != null) {
