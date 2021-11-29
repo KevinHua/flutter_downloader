@@ -142,6 +142,8 @@ public class FlutterDownloaderPlugin implements MethodCallHandler, FlutterPlugin
                         .putLong(DownloadWorker.ARG_CALLBACK_HANDLE, callbackHandle)
                         .putBoolean(DownloadWorker.ARG_DEBUG, debugMode == 1)
                         .putBoolean(DownloadWorker.ARG_SAVE_IN_PUBLIC_STORAGE, saveInPublicStorage)
+                        .putString(DownloadWorker.ARG_VIEWER_PACKAGE_NAME, viewerPackageName)
+                        .putString(DownloadWorker.ARG_VIEWER_CLASS_NAME, viewerClassName)
                         .build()
                 )
                 .build();
@@ -170,8 +172,8 @@ public class FlutterDownloaderPlugin implements MethodCallHandler, FlutterPlugin
     private void registerCallback(MethodCall call, MethodChannel.Result result) {
         List args = (List) call.arguments;
         callbackHandle = Long.parseLong(args.get(0).toString());
-        viewerPackageName = args.get(1);
-        viewerClassName = args.get(2);
+        viewerPackageName = args.get(1).toString();
+        viewerClassName = args.get(2).toString();
         result.success(null);
     }
 

@@ -74,6 +74,8 @@ public class DownloadWorker extends Worker implements MethodChannel.MethodCallHa
     public static final String ARG_CALLBACK_HANDLE = "callback_handle";
     public static final String ARG_DEBUG = "debug";
     public static final String ARG_SAVE_IN_PUBLIC_STORAGE = "save_in_public_storage";
+    public static final String ARG_VIEWER_PACKAGE_NAME = "viewer_package_name";
+    public static final String ARG_VIEWER_CLASS_NAME = "viewer_class_name";
 
     private static final String TAG = DownloadWorker.class.getSimpleName();
     private static final int BUFFER_SIZE = 4096;
@@ -99,6 +101,8 @@ public class DownloadWorker extends Worker implements MethodChannel.MethodCallHa
     private String msgStarted, msgInProgress, msgCanceled, msgFailed, msgPaused, msgComplete;
     private long lastCallUpdateNotification = 0;
     private boolean saveInPublicStorage;
+    private String viewerPackageName;
+    private String viewerClassName;
 
     public DownloadWorker(@NonNull final Context context,
                           @NonNull WorkerParameters params) {
@@ -211,6 +215,9 @@ public class DownloadWorker extends Worker implements MethodChannel.MethodCallHa
         showNotification = getInputData().getBoolean(ARG_SHOW_NOTIFICATION, false);
         clickToOpenDownloadedFile = getInputData().getBoolean(ARG_OPEN_FILE_FROM_NOTIFICATION, false);
         saveInPublicStorage = getInputData().getBoolean(ARG_SAVE_IN_PUBLIC_STORAGE, false);
+
+        viewerPackageName = getInputData().getString(ARG_VIEWER_PACKAGE_NAME);
+        viewerClassName = getInputData().getString(ARG_VIEWER_CLASS_NAME);
 
         primaryId = task.primaryId;
 
@@ -434,7 +441,7 @@ public class DownloadWorker extends Worker implements MethodChannel.MethodCallHa
                     if (clickToOpenDownloadedFile) {
                         if(android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.Q && storage != PackageManager.PERMISSION_GRANTED)
                             return;
-                        Intent intent = IntentUtils.validatedFileIntent(getApplicationContext(), savedFilePath, contentType);
+                        Intent intent = IntentUtils.validatedFileIntent(getApplicationContext(), savedFilePath, contentType, viewerPackageName, viewerClassName);
                         if (intent != null) {
                             log("Setting an intent to open the file " + savedFilePath);
                             int flags = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ? PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_IMMUTABLE : PendingIntent.FLAG_CANCEL_CURRENT;
