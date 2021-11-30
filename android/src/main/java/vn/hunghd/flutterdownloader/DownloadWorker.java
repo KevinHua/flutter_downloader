@@ -504,13 +504,40 @@ public class DownloadWorker extends Worker implements MethodChannel.MethodCallHa
      * Create a file using java.io API
      */
     private File createFileInAppSpecificDir(String filename, String savedDir) {
-        File newFile = new File(savedDir, filename);
         try {
+            // 在某些手机上,如果旧文件已存在, createNewFile 会返回  false
+            String fe;
+            String ft;
+            int pe = filename.lastIndexOf(".");
+            if(pe > 0) {
+                ft = filename.substring(0, pe);
+                fe = filename.substring(pe);
+            } else {
+                ft = filename;
+                fe = "";
+            }
+
+            // 尝试加文件名序号
+            File newFile = null;
+            int maxTries = 10;
+            for(int i = 0; i < maxTries; i++) {
+                if(i == 0) {
+                    newFile = new File(savedDir, filename);
+                } else if(i < maxTries - 1) {
+                    newFile = new File(savedDir, ft + "-" + i + "" + fe);
+                } else {
+                    newFile = new File(savedDir, ft + "-" + System.currentTimeMillis() + "" + fe);
+                    break;
+                }
+
+                if(!newFile.exists()) break;
+            }
+
             boolean rs = newFile.createNewFile();
             if(rs) {
                 return newFile;
             } else {
-                logError("It looks like you are trying to save file in public storage but not setting 'saveInPublicStorage' to 'true'");
+                logError("Faided to create new File " + $filename + " in " + $savedDir);
             }
         } catch (IOException e) {
             e.printStackTrace();
