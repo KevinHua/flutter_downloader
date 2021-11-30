@@ -351,6 +351,7 @@ public class DownloadWorker extends Worker implements MethodChannel.MethodCallHa
 
                 String charset = getCharsetFromContentType(contentType);
                 log("Charset = " + charset);
+                boolean genNameFromUrl = false;
                 if (!isResume) {
                     // try to extract filename from HTTP headers if it is not given by user
                     if (filename == null) {
@@ -363,6 +364,10 @@ public class DownloadWorker extends Worker implements MethodChannel.MethodCallHa
                             filename = url.substring(url.lastIndexOf("/") + 1);
                             try {
                                 filename = URLDecoder.decode(filename, "UTF-8");
+                                if(filename.indexOf("?") > 0) {
+                                    filename = filename.substring(filename.indexOf("?"));
+                                }
+            
                             } catch (IllegalArgumentException e) {
                                 /* ok, just let filename be not encoded */
                                 e.printStackTrace();
@@ -370,7 +375,6 @@ public class DownloadWorker extends Worker implements MethodChannel.MethodCallHa
                         }
                     }
                 }
-
                 log("fileName = " + filename);
 
                 taskDao.updateTask(getId().toString(), filename, contentType);
