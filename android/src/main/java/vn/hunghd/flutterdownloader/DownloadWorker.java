@@ -363,17 +363,17 @@ public class DownloadWorker extends Worker implements MethodChannel.MethodCallHa
                         if (filename == null || filename.isEmpty()) {
                             filename = url.substring(url.lastIndexOf("/") + 1);
                             try {
-                                filename = URLDecoder.decode(filename, "UTF-8");
-                                if(filename.indexOf("?") > 0) {
-                                    filename = filename.substring(filename.indexOf("?"));
-                                }
-            
+                                filename = URLDecoder.decode(filename, "UTF-8");            
                             } catch (IllegalArgumentException e) {
                                 /* ok, just let filename be not encoded */
                                 e.printStackTrace();
                             }
                         }
                     }
+                }
+
+                if(filename.indexOf("?") > 0) {
+                    filename = filename.substring(0, filename.indexOf("?"));
                 }
                 log("fileName = " + filename);
 
