@@ -537,7 +537,7 @@ public class DownloadWorker extends Worker implements MethodChannel.MethodCallHa
             if(rs) {
                 return newFile;
             } else {
-                logError("Faided to create new File " + $filename + " in " + $savedDir);
+                logError("Faided to create new File " + filename + " in " + savedDir);
             }
         } catch (IOException e) {
             e.printStackTrace();
