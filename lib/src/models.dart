@@ -46,8 +46,8 @@ class DownloadTaskStatus {
 ///
 class DownloadTask {
   final String taskId;
-  final DownloadTaskStatus status;
-  final int progress;
+  DownloadTaskStatus status;
+  int progress;
   final String url;
   final String? filename;
   final String savedDir;
