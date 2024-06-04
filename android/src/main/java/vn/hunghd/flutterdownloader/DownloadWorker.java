@@ -454,13 +454,13 @@ public class DownloadWorker extends Worker implements MethodChannel.MethodCallHa
                         intentClick.setClassName(viewerPackageName, viewerClassName);
                         intentClick.putExtra("task_id", getId().toString());
                         intentClick.putExtra("filename", savedFilePath);
-                        pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, intentClick, PendingIntent.FLAG_ONE_SHOT);
+                        pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, intentClick, PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
                         
                         Intent intentCancel = new Intent("flutter_downloader_notification_cancelled");
                         intentCancel.setClassName(viewerPackageName, viewerClassName);
                         intentCancel.putExtra("task_id", getId().toString());
                         intentCancel.putExtra("filename", savedFilePath);
-                        pendingIntentCancel = PendingIntent.getBroadcast(getApplicationContext(), 0, intentCancel, PendingIntent.FLAG_ONE_SHOT);
+                        pendingIntentCancel = PendingIntent.getBroadcast(getApplicationContext(), 0, intentCancel, PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
                     }
                 }
                 taskDao.updateTask(getId().toString(), status, progress);
