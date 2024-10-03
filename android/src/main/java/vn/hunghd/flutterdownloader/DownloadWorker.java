@@ -444,8 +444,8 @@ public class DownloadWorker extends Worker implements MethodChannel.MethodCallHa
                     }
 
                     if (clickToOpenDownloadedFile) {
-                        if(android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.Q && storage != PackageManager.PERMISSION_GRANTED)
-                            return;
+                        //if(android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.Q && storage != PackageManager.PERMISSION_GRANTED)
+                        //    return;
 
                         // FlutterDownloader 原来的打开文件的方法, 在一些机型上无法使用
                         //Intent intent = IntentUtils.validatedFileIntent(getApplicationContext(), savedFilePath, contentType, viewerPackageName, viewerClassName);
