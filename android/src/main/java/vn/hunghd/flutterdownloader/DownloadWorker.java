@@ -472,7 +472,13 @@ public class DownloadWorker extends Worker implements MethodChannel.MethodCallHa
                         intentCancel.setClassName(viewerPackageName, viewerClassName);
                         intentCancel.putExtra("task_id", getId().toString());
                         intentCancel.putExtra("filename", savedFilePath);
-                        pendingIntentCancel = PendingIntent.getBroadcast(getApplicationContext(), 0, intentCancel, PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
+                        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                            pendingIntentCancel = PendingIntent.getActivity(getApplicationContext(), 0, intentCancel,
+                                PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
+                        } else {
+                            pendingIntentCancel = PendingIntent.getBroadcast(getApplicationContext(), 0, intentCancel,
+                                PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
+                        }
                     }
                 }
                 taskDao.updateTask(getId().toString(), status, progress);
