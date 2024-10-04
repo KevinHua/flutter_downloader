@@ -454,7 +454,19 @@ public class DownloadWorker extends Worker implements MethodChannel.MethodCallHa
                         intentClick.setClassName(viewerPackageName, viewerClassName);
                         intentClick.putExtra("task_id", getId().toString());
                         intentClick.putExtra("filename", savedFilePath);
-                        pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, intentClick, PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
+                        if(SDK_INT >= Build.VERSION_CODES.S) {
+                            // 通知 trampoline 限制，以 Android 12 或更高版本为目标平台的应用无法从用作通知
+                            // trampoline 的服务或广播接收器中启动 activity。换言之，当用户点按通知或通知中的
+                            // 操作按钮时，您的应用无法在服务或广播接收器内调用 startActivity()。
+                            // 所以当需要点击通知实现activity跳转时，需要使用PendingIntent. getActivity，
+                            // 而不是使用PendingIntent.getBroadcast，然后在BroadcastReceiver里
+                            // 实现activity跳转，后者方式在Android 12 或更高版本为目标平台的应用中将被限制。
+                            pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, intentClick, 
+                                PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
+                        } else {
+                            pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, intentClick, 
+                                PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
+                        }
                         
                         Intent intentCancel = new Intent("flutter_downloader_notification_cancelled");
                         intentCancel.setClassName(viewerPackageName, viewerClassName);
