@@ -464,7 +464,7 @@ public class DownloadWorker extends Worker implements MethodChannel.MethodCallHa
                             pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, intentClick, 
                                 PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
                         } else {
-                            pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, intentClick, 
+                            pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, intentClick, 
                                 PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
                         }
                         
@@ -476,7 +476,7 @@ public class DownloadWorker extends Worker implements MethodChannel.MethodCallHa
                             pendingIntentCancel = PendingIntent.getActivity(getApplicationContext(), 0, intentCancel,
                                 PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
                         } else {
-                            pendingIntentCancel = PendingIntent.getBroadcast(getApplicationContext(), 0, intentCancel,
+                            pendingIntentCancel = PendingIntent.getActivity(getApplicationContext(), 0, intentCancel,
                                 PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
                         }
                     }
