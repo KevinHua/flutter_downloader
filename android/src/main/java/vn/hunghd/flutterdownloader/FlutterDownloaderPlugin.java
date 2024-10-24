@@ -186,6 +186,15 @@ public class FlutterDownloaderPlugin implements MethodCallHandler, FlutterPlugin
         boolean openFileFromNotification = call.argument("open_file_from_notification");
         boolean requiresStorageNotLow = call.argument("requires_storage_not_low");
         boolean saveInPublicStorage = call.argument("save_in_public_storage");
+
+        if (url.startsWith("data:image/")) {
+            String id = UUID.randomUUID().toString();
+            result.success(id);
+            taskDao.insertOrUpdateNewTask(id, url, DownloadStatus.COMPLETE, 100, filename,
+                    savedDir, null, false, false, false);
+            return;
+        }
+
         WorkRequest request = buildRequest(url, savedDir, filename, headers, showNotification,
                 openFileFromNotification, false, requiresStorageNotLow, saveInPublicStorage);
         WorkManager.getInstance(context).enqueue(request);
@@ -338,9 +347,17 @@ public class FlutterDownloaderPlugin implements MethodCallHandler, FlutterPlugin
         String taskId = call.argument("task_id");
         boolean shouldDeleteContent = call.argument("should_delete_content");
         DownloadTask task = taskDao.loadTask(taskId);
+        
+        boolean isDataImage = false;
+        if (task.url.startsWith("data:image/")) {
+            isDataImage = true;
+        }
+
         if (task != null) {
-            if (task.status == DownloadStatus.ENQUEUED || task.status == DownloadStatus.RUNNING) {
-                WorkManager.getInstance(context).cancelWorkById(UUID.fromString(taskId));
+            if(!isDataImage) {
+                if (task.status == DownloadStatus.ENQUEUED || task.status == DownloadStatus.RUNNING) {
+                    WorkManager.getInstance(context).cancelWorkById(UUID.fromString(taskId));
+                }
             }
             if (shouldDeleteContent) {
                 String filename = task.filename;
@@ -357,7 +374,9 @@ public class FlutterDownloaderPlugin implements MethodCallHandler, FlutterPlugin
             }
             taskDao.deleteTask(taskId);
 
-            NotificationManagerCompat.from(context).cancel(task.primaryId);
+            if(!isDataImage) {
+                NotificationManagerCompat.from(context).cancel(task.primaryId);
+            }
 
             result.success(null);
         } else {
