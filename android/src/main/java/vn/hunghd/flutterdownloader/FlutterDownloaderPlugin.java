@@ -42,7 +42,8 @@ public class FlutterDownloaderPlugin implements MethodCallHandler, FlutterPlugin
     public static final String SHARED_PREFERENCES_KEY = "vn.hunghd.downloader.pref";
     public static final String CALLBACK_DISPATCHER_HANDLE_KEY = "callback_dispatcher_handle_key";
 
-    private static FlutterDownloaderPlugin instance;
+    //private static FlutterDownloaderPlugin instance;
+
     private MethodChannel flutterChannel;
     private TaskDbHelper dbHelper;
     private TaskDao taskDao;
@@ -55,16 +56,21 @@ public class FlutterDownloaderPlugin implements MethodCallHandler, FlutterPlugin
     private int debugMode;
     private final Object initializationLock = new Object();
 
-    @SuppressLint("NewApi")
-    public static void registerWith(PluginRegistry.Registrar registrar) {
-        if (instance == null) {
-            instance = new FlutterDownloaderPlugin();
-        }
-        instance.onAttachedToEngine(registrar.context(), registrar.messenger());
-    }
+//    @SuppressLint("NewApi")
+//    public static void registerWith(PluginRegistry.Registrar registrar) {
+//        if (instance == null) {
+//            instance = new FlutterDownloaderPlugin();
+//        }
+//        instance.onAttachedToEngine(registrar.context(), registrar.messenger());
+//    }
 
     public void onAttachedToEngine(Context applicationContext, BinaryMessenger messenger) {
         synchronized (initializationLock) {
+//            if (instance != null) {
+//                return;
+//                instance = new FlutterDownloaderPlugin();
+//            }
+
             if (flutterChannel != null) {
                 return;
             }
