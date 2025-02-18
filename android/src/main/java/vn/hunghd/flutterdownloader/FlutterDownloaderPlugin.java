@@ -68,12 +68,13 @@ public class FlutterDownloaderPlugin implements MethodCallHandler, FlutterPlugin
         synchronized (initializationLock) {
 //            if (instance != null) {
 //                return;
-//                instance = new FlutterDownloaderPlugin();
 //            }
+//            instance = new FlutterDownloaderPlugin();
 
             if (flutterChannel != null) {
                 return;
             }
+
             this.context = applicationContext;
             flutterChannel = new MethodChannel(messenger, CHANNEL);
             flutterChannel.setMethodCallHandler(this);

@@ -1,5 +1,6 @@
 package vn.hunghd.flutterdownloader;
 
+import android.Manifest;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -18,6 +19,7 @@ import android.net.Uri;
 import android.os.Build;
 
 import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
@@ -57,7 +59,6 @@ import androidx.work.WorkerParameters;
 import io.flutter.FlutterInjector;
 import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.embedding.engine.dart.DartExecutor;
-import io.flutter.embedding.engine.plugins.shim.ShimPluginRegistry;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.PluginRegistry;
@@ -122,7 +123,7 @@ public class DownloadWorker extends Worker implements MethodChannel.MethodCallHa
                 SharedPreferences pref = context.getSharedPreferences(FlutterDownloaderPlugin.SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE);
                 long callbackHandle = pref.getLong(FlutterDownloaderPlugin.CALLBACK_DISPATCHER_HANDLE_KEY, 0);
 
-                String appBundlePath =  FlutterInjector.instance().flutterLoader().findAppBundlePath();;
+                String appBundlePath = FlutterInjector.instance().flutterLoader().findAppBundlePath();
                 AssetManager assets = context.getAssets();
 
                 // We need to create an instance of `FlutterEngine` before looking up the
@@ -136,12 +137,6 @@ public class DownloadWorker extends Worker implements MethodChannel.MethodCallHa
                 DartExecutor executor = backgroundFlutterEngine.getDartExecutor();
                 DartExecutor.DartCallback dartCallback = new DartExecutor.DartCallback(assets, appBundlePath, flutterCallback);
                 executor.executeDartCallback(dartCallback);
-
-                /// backward compatibility with V1 embedding
-                if (getApplicationContext() instanceof PluginRegistry.PluginRegistrantCallback) {
-                    PluginRegistry.PluginRegistrantCallback pluginRegistrantCallback = (PluginRegistry.PluginRegistrantCallback) getApplicationContext();
-                    pluginRegistrantCallback.registerWith(new ShimPluginRegistry(backgroundFlutterEngine));
-                }
             }
         }
 
@@ -231,7 +226,7 @@ public class DownloadWorker extends Worker implements MethodChannel.MethodCallHa
         File partialFile = new File(saveFilePath);
         if (partialFile.exists()) {
             isResume = true;
-            log("exists file for "+ filename + "automatic resuming...");
+            log("exists file for " + filename + "automatic resuming...");
         }
 
         try {
@@ -363,7 +358,7 @@ public class DownloadWorker extends Worker implements MethodChannel.MethodCallHa
                         if (filename == null || filename.isEmpty()) {
                             filename = url.substring(url.lastIndexOf("/") + 1);
                             try {
-                                filename = URLDecoder.decode(filename, "UTF-8");            
+                                filename = URLDecoder.decode(filename, "UTF-8");
                             } catch (IllegalArgumentException e) {
                                 /* ok, just let filename be not encoded */
                                 e.printStackTrace();
@@ -372,7 +367,7 @@ public class DownloadWorker extends Worker implements MethodChannel.MethodCallHa
                     }
                 }
 
-                if(filename.indexOf("?") > 0) {
+                if (filename.indexOf("?") > 0) {
                     filename = filename.substring(0, filename.indexOf("?"));
                 }
                 log("fileName = " + filename);
@@ -454,30 +449,30 @@ public class DownloadWorker extends Worker implements MethodChannel.MethodCallHa
                         intentClick.setClassName(viewerPackageName, viewerClassName);
                         intentClick.putExtra("task_id", getId().toString());
                         intentClick.putExtra("filename", savedFilePath);
-                        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                             // 通知 trampoline 限制，以 Android 12（sdk 31) 或更高版本为目标平台的应用无法从用作通知
                             // trampoline 的服务或广播接收器中启动 activity。换言之，当用户点按通知或通知中的
                             // 操作按钮时，您的应用无法在服务或广播接收器内调用 startActivity()。
                             // 所以当需要点击通知实现activity跳转时，需要使用PendingIntent. getActivity，
                             // 而不是使用PendingIntent.getBroadcast，然后在BroadcastReceiver里
                             // 实现activity跳转，后者方式在Android 12 或更高版本为目标平台的应用中将被限制。
-                            pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, intentClick, 
-                                PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
+                            pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, intentClick,
+                                    PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
                         } else {
-                            pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, intentClick, 
-                                PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
+                            pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, intentClick,
+                                    PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
                         }
-                        
+
                         Intent intentCancel = new Intent("flutter_downloader_notification_cancelled");
                         intentCancel.setClassName(viewerPackageName, viewerClassName);
                         intentCancel.putExtra("task_id", getId().toString());
                         intentCancel.putExtra("filename", savedFilePath);
-                        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                             pendingIntentCancel = PendingIntent.getActivity(getApplicationContext(), 0, intentCancel,
-                                PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
+                                    PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
                         } else {
                             pendingIntentCancel = PendingIntent.getActivity(getApplicationContext(), 0, intentCancel,
-                                PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
+                                    PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
                         }
                     }
                 }
@@ -527,7 +522,7 @@ public class DownloadWorker extends Worker implements MethodChannel.MethodCallHa
             String fe;
             String ft;
             int pe = filename.lastIndexOf(".");
-            if(pe > 0) {
+            if (pe > 0) {
                 ft = filename.substring(0, pe);
                 fe = filename.substring(pe);
             } else {
@@ -538,21 +533,21 @@ public class DownloadWorker extends Worker implements MethodChannel.MethodCallHa
             // 尝试加文件名序号
             File newFile = null;
             int maxTries = 10;
-            for(int i = 0; i < maxTries; i++) {
-                if(i == 0) {
+            for (int i = 0; i < maxTries; i++) {
+                if (i == 0) {
                     newFile = new File(savedDir, filename);
-                } else if(i < maxTries - 1) {
+                } else if (i < maxTries - 1) {
                     newFile = new File(savedDir, ft + "-" + i + "" + fe);
                 } else {
                     newFile = new File(savedDir, ft + "-" + System.currentTimeMillis() + "" + fe);
                     break;
                 }
 
-                if(!newFile.exists()) break;
+                if (!newFile.exists()) break;
             }
 
             boolean rs = newFile.createNewFile();
-            if(rs) {
+            if (rs) {
                 return newFile;
             } else {
                 logError("Faided to create new File " + filename + " in " + savedDir);
@@ -678,7 +673,7 @@ public class DownloadWorker extends Worker implements MethodChannel.MethodCallHa
                     .setAutoCancel(true)
                     .setPriority(NotificationCompat.PRIORITY_LOW);
 
-            if(intentCancel != null) {
+            if (intentCancel != null) {
                 builder.setDeleteIntent(intentCancel);
             }
 
@@ -740,7 +735,17 @@ public class DownloadWorker extends Worker implements MethodChannel.MethodCallHa
                 }
             }
             log("Update notification: {notificationId: " + primaryId + ", title: " + title + ", status: " + status + ", progress: " + progress + "}");
-            NotificationManagerCompat.from(context).notify(primaryId, builder.build());
+            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+            } else {
+                NotificationManagerCompat.from(context).notify(primaryId, builder.build());
+            }
             lastCallUpdateNotification = System.currentTimeMillis();
         }
     }
